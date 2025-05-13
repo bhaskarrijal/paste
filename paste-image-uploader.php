@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Paste
+ * Plugin Name: Paste Image Uploader
  * Plugin URI: https://bhaskarrijal.me/paste
  * Description: Extremely lighweight and simple plugin to paste images directly into the WordPress media library upload modal.
  * Version: 1.0.0
@@ -60,10 +60,11 @@ class Paste_Image_Uploader {
             'PasteImageUploader',
             [
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce' => wp_create_nonce('paste_image_uploader_nonce'),
                 'strings' => [
                     'drop_text' => __( 'Drop files to upload', 'paste-image-uploader' ),
                     'paste_shortcut' => __( 'Press Ctrl+V or Cmd+V to paste image(s) from clipboard', 'paste-image-uploader' ),
-                    'paste_powered_by' => __( 'Powered by Paste plugin', 'paste-image-uploader' ),
+                    'paste_powered_by' => __( 'Powered by Paste Image Uploader plugin', 'paste-image-uploader' ),
                 ]
             ]
         );
@@ -77,18 +78,26 @@ class Paste_Image_Uploader {
     }
 
     /**
-     * handle ajax  image upload from clipboard
+     * handle ajax image upload from clipboard
      */
     public function handle_ajax_upload() {
+        // Verify nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( $_POST['nonce'] ), 'paste_image_uploader_nonce' ) ) {
+            wp_send_json_error( __( 'Security check failed.', 'paste-image-uploader' ) );
+        }
+        
         $options = get_option( 'paste_image_uploader_options', [] );
         // Only block if explicitly disabled.
         if ( isset( $options['enable_paste_upload'] ) && ! $options['enable_paste_upload'] ) {
-            wp_send_json_error( __( 'Feature disabled.', 'paste' ) );
+            wp_send_json_error( __( 'Feature disabled.', 'paste-image-uploader' ) );
         }
+        
+        // Validate file exists
         if ( empty( $_FILES['file'] ) ) {
             wp_send_json_error( 'No file found in clipboard data.' );
         }
-
+        
+        // Use WordPress's built-in file handling which includes sanitization
         $file = $_FILES['file'];
         $overrides = [ 'test_form' => false ];
         $file_return = wp_handle_upload( $file, $overrides );
@@ -123,8 +132,8 @@ class Paste_Image_Uploader {
      */
     public function add_settings_page() {
         add_options_page(
-            __( 'Paste Settings', 'paste' ),
-            __( 'Paste', 'paste' ),
+            __( 'Paste Image Uploader Settings', 'paste-image-uploader' ),
+            __( 'Paste Image Uploader', 'paste-image-uploader' ),
             'manage_options',
             'paste',
             [ $this, 'render_settings_page' ]
@@ -161,7 +170,7 @@ class Paste_Image_Uploader {
      * settings section callback
      */
     public function settings_section_cb() {
-        echo '<p>' . esc_html__( 'Configure the settings for the Paste plugin.', 'paste' ) . '</p>';
+        echo '<p>' . esc_html__( 'Configure the settings for the Paste Image Uploader plugin.', 'paste-image-uploader' ) . '</p>';
     }
 
     /**
@@ -172,7 +181,7 @@ class Paste_Image_Uploader {
         $enabled = isset( $options['enable_paste_upload'] ) ? (bool) $options['enable_paste_upload'] : true;
         ?>
         <input type="checkbox" name="paste_image_uploader_options[enable_paste_upload]" value="1" <?php checked( $enabled, true ); ?> />
-        <label for="enable_paste_upload"><?php esc_html_e( 'Enable the paste feature', 'paste' ); ?></label>
+        <label for="enable_paste_upload"><?php esc_html_e( 'Enable the paste feature', 'paste-image-uploader' ); ?></label>
         <?php
     }
 
@@ -191,7 +200,7 @@ class Paste_Image_Uploader {
     public function render_settings_page() {
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'Paste Settings', 'paste' ); ?></h1>
+            <h1><?php esc_html_e( 'Paste Image Uploader Settings', 'paste-image-uploader' ); ?></h1>
             <form action="options.php" method="post">
                 <?php
                 settings_fields( 'paste_image_uploader_options' );

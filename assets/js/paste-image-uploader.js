@@ -1,5 +1,5 @@
 (function ($) {
-    console.log('Paste plugin: script loaded');
+    console.log('Paste Image Uploader plugin: script loaded');
 
     $(document).ready(function () {
         if (typeof wp !== 'undefined' && wp.media && wp.media.view) {
@@ -9,7 +9,7 @@
                 render: function () {
                     originalUploaderInline.prototype.render.apply(this, arguments);
 
-                    console.log('Paste plugin: Customizing uploader text');
+                    console.log('Paste Image Uploader plugin: Customizing uploader text');
 
                     try {
                         this.$el.find('.paste-tooltip-icon').remove();
@@ -36,7 +36,7 @@
                             }
                         }
                     } catch (e) {
-                        console.error('Paste plugin: Error customizing uploader text', e);
+                        console.error('Paste Image Uploader plugin: Error customizing uploader text', e);
                     }
 
                     return this;
@@ -57,18 +57,18 @@
                 });
             }
 
-            console.log('Paste plugin: Extended uploader views');
+            console.log('Paste Image Uploader plugin: Extended uploader views');
         } else {
-            console.log('Paste plugin: wp.media.view not available');
+            console.log('Paste Image Uploader plugin: wp.media.view not available');
         }
     });
 
     $(document).on('paste', function (e) {
-        console.log('Paste plugin: paste event detected');
+        console.log('Paste Image Uploader plugin: paste event detected');
 
         var items = (e.originalEvent.clipboardData || e.clipboardData).items;
         if (!items || items.length === 0) {
-            console.log('Paste plugin: no clipboard items found');
+            console.log('Paste Image Uploader plugin: no clipboard items found');
             return;
         }
 
@@ -76,7 +76,7 @@
             var item = items[i];
             if (item.type.indexOf('image') !== -1) {
                 var file = item.getAsFile();
-                console.log('Paste plugin: image file detected', file);
+                console.log('Paste Image Uploader plugin: image file detected', file);
 
                 var ext = item.type.split('/')[1] || 'png';
                 var fileName = 'pasted-image-' + new Date().getTime() + '.' + ext;
@@ -183,7 +183,7 @@
                 animateProgress(file);
             }
         } catch (error) {
-            console.error('Paste plugin: error creating preview', error);
+            console.error('Paste Image Uploader plugin: error creating preview', error);
         }
     }
 
@@ -223,7 +223,7 @@
             return false;
         }
 
-        console.log('Paste plugin: inspecting available uploaders');
+        console.log('Paste Image Uploader plugin: inspecting available uploaders');
 
         var uploaders = [];
 
@@ -268,22 +268,22 @@
                     });
                 }
             } catch (error) {
-                console.error('Paste plugin: error accessing upload page uploader', error);
+                console.error('Paste Image Uploader plugin: error accessing upload page uploader', error);
             }
         }
 
         for (var i = 0; i < uploaders.length; i++) {
             var entry = uploaders[i];
-            console.log('Paste plugin: trying ' + entry.name);
+            console.log('Paste Image Uploader plugin: trying ' + entry.name);
 
             try {
                 var uploader = entry.uploader;
 
                 if (typeof uploader.addFile === 'function') {
-                    console.log('Paste plugin: using addFile method on ' + entry.name);
+                    console.log('Paste Image Uploader plugin: using addFile method on ' + entry.name);
                     uploader.addFile(file);
 
-                    console.log('Paste plugin: letting WordPress show native upload progress');
+                    console.log('Paste Image Uploader plugin: letting WordPress show native upload progress');
 
                     uploader.refresh();
                     if (uploader.state !== plupload.STARTED) {
@@ -294,10 +294,10 @@
                 }
 
                 if (uploader.uploader && typeof uploader.uploader.addFile === 'function') {
-                    console.log('Paste plugin: using nested addFile method on ' + entry.name);
+                    console.log('Paste Image Uploader plugin: using nested addFile method on ' + entry.name);
                     uploader.uploader.addFile(file);
 
-                    console.log('Paste plugin: letting WordPress show native upload progress');
+                    console.log('Paste Image Uploader plugin: letting WordPress show native upload progress');
 
                     uploader.uploader.refresh();
                     if (uploader.uploader.state !== plupload.STARTED) {
@@ -308,19 +308,19 @@
                 }
 
                 if (uploader.controller && typeof uploader.controller.upload === 'function') {
-                    console.log('Paste plugin: using controller upload method on ' + entry.name);
+                    console.log('Paste Image Uploader plugin: using controller upload method on ' + entry.name);
                     uploader.controller.upload([file]);
 
                     return true;
                 }
 
-                console.log('Paste plugin: ' + entry.name + ' does not have usable upload methods');
+                console.log('Paste Image Uploader plugin: ' + entry.name + ' does not have usable upload methods');
             } catch (error) {
-                console.error('Paste plugin: error using ' + entry.name, error);
+                console.error('Paste Image Uploader plugin: error using ' + entry.name, error);
             }
         }
 
-        console.log('Paste plugin: no compatible WordPress uploader method found');
+        console.log('Paste Image Uploader plugin: no compatible WordPress uploader method found');
         return false;
     }
 
@@ -328,11 +328,12 @@
      * upload via ajax as a last resort
      */
     function uploadViaAjax(file) {
-        console.log('Paste plugin: no WordPress uploader found, using AJAX fallback');
+        console.log('Paste Image Uploader plugin: no WordPress uploader found, using AJAX fallback');
 
         var data = new FormData();
         data.append('file', file);
         data.append('action', 'paste_image_uploader_upload');
+        data.append('nonce', PasteImageUploader.nonce);
 
         $.ajax({
             url: PasteImageUploader.ajax_url,
@@ -357,10 +358,10 @@
                 return xhr;
             },
             beforeSend: function () {
-                console.log('Paste plugin: sending AJAX request');
+                console.log('Paste Image Uploader plugin: sending AJAX request');
             },
             success: function (response) {
-                console.log('Paste plugin: AJAX success', response);
+                console.log('Paste Image Uploader plugin: AJAX success', response);
 
                 if (file._progressBar) {
                     file._progressBar.css('width', '100%');
@@ -374,7 +375,7 @@
                 }
 
                 if (response.success) {
-                    console.log('Paste plugin: image uploaded via AJAX', response.data.url);
+                    console.log('Paste Image Uploader plugin: image uploaded via AJAX', response.data.url);
 
                     if (window.wp && wp.media && wp.media.frame) {
                         try {
@@ -382,12 +383,12 @@
 
                             if (wp.media.frame.state().get('selection')) {
                                 wp.media.frame.state().get('selection').add(attachment);
-                                console.log('Paste plugin: attachment selected in modal');
+                                console.log('Paste Image Uploader plugin: attachment selected in modal');
                             }
 
                             if (wp.media.frame.state().get('library')) {
                                 wp.media.frame.state().get('library').add(attachment);
-                                console.log('Paste plugin: attachment added to library');
+                                console.log('Paste Image Uploader plugin: attachment added to library');
 
                                 var contentState = wp.media.frame.content.get();
                                 if (contentState && contentState.collection) {
@@ -405,11 +406,11 @@
                             }, 1000);
 
                         } catch (error) {
-                            console.error('Paste plugin: error adding to media library', error);
+                            console.error('Paste Image Uploader plugin: error adding to media library', error);
                         }
                     }
                 } else {
-                    console.error('Paste plugin: upload error', response.data);
+                    console.error('Paste Image Uploader plugin: upload error', response.data);
 
                     if (file._label) {
                         file._label.text('Error').css('color', 'red');
@@ -420,7 +421,7 @@
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                console.error('Paste plugin: AJAX error', textStatus, errorThrown);
+                console.error('Paste Image Uploader plugin: AJAX error', textStatus, errorThrown);
 
                 if (file._label) {
                     file._label.text('Error: ' + textStatus).css('color', 'red');

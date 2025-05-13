@@ -1,0 +1,43 @@
+# Copyright (C) 2024 Bhaskar Rijal
+# This file is distributed under the same license as the Paste Image Uploader plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Paste Image Uploader 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/paste-image-uploader\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-06-09T12:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.7.1\n"
+"X-Domain: paste-image-uploader\n"
+
+#: paste-image-uploader.php:86
+msgid "Feature disabled."
+msgstr ""
+
+#: paste-image-uploader.php:100
+msgid "Security check failed."
+msgstr ""
+
+#: paste-image-uploader.php:126
+msgid "Paste Image Uploader Settings"
+msgstr ""
+
+#: paste-image-uploader.php:127
+msgid "Paste Image Uploader"
+msgstr ""
+
+#: paste-image-uploader.php:146
+msgid "Configure the settings for the Paste Image Uploader plugin."
+msgstr ""
+
+#: paste-image-uploader.php:153
+msgid "Enable Plugin"
+msgstr ""
+
+#: paste-image-uploader.php:175
+msgid "Enable the paste feature"
+msgstr "" 
