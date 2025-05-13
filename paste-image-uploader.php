@@ -26,7 +26,6 @@ class Paste_Image_Uploader {
         add_action( 'admin_menu', [ $this, 'add_settings_page' ] );
         add_action( 'admin_init', [ $this, 'register_settings' ] );
         add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), [ $this, 'add_settings_link' ] );
-        add_filter( 'auto_update_plugin', [ $this, 'auto_update_plugin' ], 10, 2 );
     }
 
     /**
@@ -81,24 +80,36 @@ class Paste_Image_Uploader {
      * handle ajax image upload from clipboard
      */
     public function handle_ajax_upload() {
-        // Verify nonce for security
-        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( $_POST['nonce'] ), 'paste_image_uploader_nonce' ) ) {
+        // verify nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'paste_image_uploader_nonce' ) ) {
             wp_send_json_error( __( 'Security check failed.', 'paste-image-uploader' ) );
         }
         
         $options = get_option( 'paste_image_uploader_options', [] );
-        // Only block if explicitly disabled.
+        // only block if explicitly disabled
         if ( isset( $options['enable_paste_upload'] ) && ! $options['enable_paste_upload'] ) {
             wp_send_json_error( __( 'Feature disabled.', 'paste-image-uploader' ) );
         }
         
-        // Validate file exists
-        if ( empty( $_FILES['file'] ) ) {
-            wp_send_json_error( 'No file found in clipboard data.' );
+        // validate file exists and has all required elements
+        if ( ! isset( $_FILES['file'] ) || 
+             ! isset( $_FILES['file']['name'] ) || 
+             ! isset( $_FILES['file']['type'] ) || 
+             ! isset( $_FILES['file']['tmp_name'] ) || 
+             ! isset( $_FILES['file']['error'] ) || 
+             ! isset( $_FILES['file']['size'] ) ) {
+            wp_send_json_error( 'Invalid or incomplete file data.' );
         }
         
-        // Use WordPress's built-in file handling which includes sanitization
-        $file = $_FILES['file'];
+        // sanitize as much as possible before passing to wp_handle_upload
+        $file = array(
+            'name'     => sanitize_file_name( wp_unslash( $_FILES['file']['name'] ) ),
+            'type'     => sanitize_text_field( wp_unslash( $_FILES['file']['type'] ) ),
+            'tmp_name' => isset( $_FILES['file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['file']['tmp_name'] ) ) : '', // Sanitize the server path
+            'error'    => intval( $_FILES['file']['error'] ),
+            'size'     => intval( $_FILES['file']['size'] ),
+        );
+        
         $overrides = [ 'test_form' => false ];
         $file_return = wp_handle_upload( $file, $overrides );
 
@@ -152,14 +163,14 @@ class Paste_Image_Uploader {
 
         add_settings_section(
             'paste_image_uploader_main',
-            __( 'Main Settings', 'paste' ),
+            __( 'Main Settings', 'paste-image-uploader' ),
             [ $this, 'settings_section_cb' ],
             'paste'
         );
 
         add_settings_field(
             'enable_paste_upload',
-            __( 'Enable Plugin', 'paste' ),
+            __( 'Enable Plugin', 'paste-image-uploader' ),
             [ $this, 'field_enable_paste_upload_cb' ],
             'paste',
             'paste_image_uploader_main'
@@ -222,24 +233,6 @@ class Paste_Image_Uploader {
         $settings_link = '<a href="' . admin_url( 'options-general.php?page=paste' ) . '">' . __( 'Settings', 'paste-image-uploader' ) . '</a>';
         array_unshift( $links, $settings_link );
         return $links;
-    }
-
-    /**
-     * Control auto-update for this plugin
-     * 
-     * @param bool $update Whether to update the plugin or not
-     * @param object $item The plugin update offer
-     * @return bool Whether to update the plugin or not
-     */
-    public function auto_update_plugin( $update, $item ) {
-        // If this is our plugin
-        if ( isset( $item->slug ) && $item->slug === plugin_basename( __DIR__ ) ) {
-            // Always return true to enable auto-updates by default
-            return true;
-        }
-        
-        // For other plugins, return the default
-        return $update;
     }
 }
 
