@@ -3,7 +3,7 @@
  * Plugin Name: Paste
  * Plugin URI: https://bhaskarrijal.me/paste
  * Description: Extremely lighweight and simple plugin to paste images directly into the WordPress media library upload modal.
- * Version: 0.0.1
+ * Version: 1.0.0
  * Author: Bhaskar Rijal
  * Author URI: https://bhaskarrijal.me
  * License: GPL2
@@ -155,14 +155,6 @@ class Paste_Image_Uploader {
             'paste',
             'paste_image_uploader_main'
         );
-
-        add_settings_field(
-            'enable_auto_updates',
-            __( 'Auto Updates', 'paste' ),
-            [ $this, 'field_enable_auto_updates_cb' ],
-            'paste',
-            'paste_image_uploader_main'
-        );
     }
 
     /**
@@ -185,24 +177,11 @@ class Paste_Image_Uploader {
     }
 
     /**
-     * field callback for enable_auto_updates
-     */
-    public function field_enable_auto_updates_cb() {
-        $options = get_option( 'paste_image_uploader_options' );
-        $enabled = isset( $options['enable_auto_updates'] ) ? (bool) $options['enable_auto_updates'] : true;
-        ?>
-        <input type="checkbox" name="paste_image_uploader_options[enable_auto_updates]" value="1" <?php checked( $enabled, true ); ?> />
-        <label for="enable_auto_updates"><?php esc_html_e( 'Enable automatic updates for this plugin', 'paste' ); ?></label>
-        <?php
-    }
-
-    /**
      * sanitize options
      */
     public function sanitize_options( $input ) {
         $output = [];
         $output['enable_paste_upload'] = isset( $input['enable_paste_upload'] ) && $input['enable_paste_upload'] ? 1 : 0;
-        $output['enable_auto_updates'] = isset( $input['enable_auto_updates'] ) && $input['enable_auto_updates'] ? 1 : 0;
         return $output;
     }
 
@@ -246,9 +225,8 @@ class Paste_Image_Uploader {
     public function auto_update_plugin( $update, $item ) {
         // If this is our plugin
         if ( isset( $item->slug ) && $item->slug === plugin_basename( __DIR__ ) ) {
-            $options = get_option( 'paste_image_uploader_options', [] );
-            // Return the option setting or true if not set (enable by default)
-            return isset( $options['enable_auto_updates'] ) ? (bool) $options['enable_auto_updates'] : true;
+            // Always return true to enable auto-updates by default
+            return true;
         }
         
         // For other plugins, return the default
