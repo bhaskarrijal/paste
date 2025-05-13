@@ -1,0 +1,49 @@
+.paste-shortcut {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #666;
+    text-align: center;
+}
+
+.paste-tooltip-icon {
+    display: inline-block;
+    margin-left: 1px;
+    margin-bottom: 1px;
+    vertical-align: middle;
+    cursor: help;
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: #2271b1;
+}
+
+.paste-tooltip-icon:hover {
+    color: #135e96;
+}
+
+.upload-ui .upload-instructions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.paste-tooltip {
+    display: inline-block;
+    cursor: help;
+    color: #0073aa;
+    font-size: 12px;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 16px;
+    margin-left: 4px;
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+}
+
+.paste-tooltip:hover {
+    color: #00a0d2;
+    background-color: #fff;
+    border-color: #0073aa;
+}
